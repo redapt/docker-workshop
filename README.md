@@ -3,18 +3,18 @@ This is the documentation for an **Introduction to Docker** for Redapt's "Docker
 
 by Christoph Champ for Redapt, Inc. (March 2018)
 
-**Docker** is an open-source project that automates the deployment of applications inside software containers. Quote of features from docker web page:
+**Docker** is an open-source project that automates the deployment of applications inside software containers.
 > Docker containers wrap up a piece of software in a complete filesystem that contains everything it needs to run: code, runtime, system tools, system libraries – anything you can install on a server. This guarantees that it will always run the same, regardless of the environment it is running in. [Docker.com](https://www.docker.com/what-docker)
 
 ## Docker directives
 
-Docker can build images automatically by reading the instructions from a Dockerfile. A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using docker build users can create an automated build that executes several command-line instructions in succession.
+Docker can build images automatically by reading the instructions from a Dockerfile. A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Using `docker build`, users can create an automated build that executes several command-line instructions in succession.
 
 This section will describe some of the common Dockerfile commands (aka "instructions" / "directives").
 
 ### FROM
 
-The FROM instruction initializes a new build stage and sets the Base Image for subsequent instructions. As such, a valid Dockerfile must start with a FROM instruction. The image can be any valid image – it is especially easy to start by pulling an image from the [Public Repositories](https://hub.docker.com/). All of the examples shown in this workshop will pull base images from the public repositories (aka Docker Hub).
+The `FROM` instruction initializes a new build stage and sets the Base Image for subsequent instructions. As such, a valid Dockerfile must start with a `FROM` instruction. The image can be any valid image – it is especially easy to start by pulling an image from the [Public Repositories](https://hub.docker.com/). All of the examples shown in this workshop will pull base images from the public repositories (aka Docker Hub).
 
 Every example of a Dockerfile shown in this workshop will begin with the `FROM` directive.
 
@@ -56,11 +56,11 @@ $ docker exec -u 0 -it <container_name> /bin/bash
 
 ### ENV
 
-The `ENV` instruction sets the environment variable <key> to the value <value>. This value will be in the environment of all "descendant" Dockerfile commands and can be replaced inline in many as well.
+The `ENV` instruction sets the environment variable `key` to the value `value`. This value will be in the environment of all "descendant" Dockerfile commands and can be replaced inline in many as well.
 
 *Note: The following is a **_terrible_** way of building a container. I am purposely doing it this way so I can show you a much better way later (see below).*
 
-* Build a CentOS 7 Docker image with Java 8 installed:
+* Build a CentOS 7 Docker image with Oracle Java 8 installed:
 ```
 # SEE: https://gist.github.com/P7h/9741922 for various Java versions
 FROM centos:latest
@@ -113,9 +113,11 @@ CMD ["echo", "Hello from within my container"]
 
 The `CMD` directive *only* executes when the container is started, whereas the `RUN` directive is executed during the build of the image.
 
- $ docker build -t centos7/echo:v1 .
- $ docker run centos7/echo:v1
- Hello from within my container
+```
+$ docker build -t centos7/echo:v1 .
+$ docker run centos7/echo:v1
+Hello from within my container
+```
 
 The container starts, echos out that message, then exits.
 
@@ -149,11 +151,11 @@ Note the difference between the output of the "echo" and the "entry" containers.
 
 The `EXPOSE` instruction informs Docker that the container listens on the specified network ports at runtime. You can specify whether the port listens on TCP or UDP, and the default is TCP if the protocol is not specified.
 
-The `EXPOSE` instruction does not actually publish the port. It functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published. To actually publish the port when running the container, use the -p flag on docker run to publish and map one or more ports, or the -P flag to publish all exposed ports and map them to high-order ports (i.e., from 32769 - 65535).
+The `EXPOSE` instruction does not actually publish the port. It functions as a type of documentation between the person who builds the image and the person who runs the container, about which ports are intended to be published. To actually publish the port when running the container, use the `-p` flag on docker run to publish and map one or more ports, or the `-P` flag to publish all exposed ports and map them to high-order ports (i.e., from 32769 - 65535).
 
 ```
 FROM centos:latest
-LABEL maintainer="xtof@example.com"
+LABEL maintainer="bob@example.com"
 
 RUN yum update -y
 RUN yum install -y httpd net-tools
@@ -173,7 +175,7 @@ $ docker exec webserver /bin/cat /var/www/html/index.html
 This is a custom index file built during the image creation
 
 # Get the internal container IP address:
-$ docker inspect webserver -f '<nowiki>{{.NetworkSettings.IPAddress}}</nowiki>'  # => 172.17.0.6
+$ docker inspect webserver -f '{{.NetworkSettings.IPAddress}}'  # => 172.17.0.6
 #~OR~
 $ docker inspect webserver | jq -crM '.[] | .NetworkSettings.IPAddress'  # => 172.17.0.6
 
@@ -206,7 +208,7 @@ $ docker stop webserver && docker rm webserver
 * Explicitly expose a port in the Docker image:
 ```
 FROM centos:latest
-LABEL maintainer="xtof@example.com"
+LABEL maintainer="bob@example.com"
 
 RUN yum update -y
 RUN yum install -y httpd net-tools
@@ -223,7 +225,7 @@ $ docker build -t centos7/apache:v1 .
 $ docker run -d --rm --name webserver -P centos7/apache:v1
 
 # Get the higher-order external port automatically assigned to the container:
-$ docker container ls --format '<nowiki>{{.Names}} {{.Ports}}</nowiki>'
+$ docker container ls --format '{{.Names}} {{.Ports}}'
 webserver 0.0.0.0:32769->80/tcp
 #~OR~
 $ docker port webserver | cut -d: -f2
@@ -243,3 +245,234 @@ sys    0m0.008s
 ```
 
 Note that we passed `--rm` to the `docker run` command so that the container will be removed when we stop the container. Also note how much faster the container stopped (~300ms vs. 10 seconds above).
+
+## Container volume managment
+
+```
+$ docker run -it --name voltest -v /mydata centos:latest /bin/bash
+
+[root@bffdcb88c485 /]# df -h
+Filesystem                   Size  Used Avail Use% Mounted on
+none                         213G  173G   30G  86% /
+tmpfs                        7.8G     0  7.8G   0% /dev
+tmpfs                        7.8G     0  7.8G   0% /sys/fs/cgroup
+/dev/mapper/ubuntu--vg-root  213G  173G   30G  86% /mydata
+shm                           64M     0   64M   0% /dev/shm
+tmpfs                        7.8G     0  7.8G   0% /sys/firmware
+
+[root@bffdcb88c485 /]# echo "testing" >/mydata/mytext.txt
+
+$ docker inspect voltest | jq -crM '.[] | .Mounts[].Source'
+/var/lib/docker/volumes/2a53fd295595690200a63def8a333b54682174923339130d560fb77ecbe41a3b/_data
+
+$ sudo cat /var/lib/docker/volumes/2a53fd295595690200a63def8a333b54682174923339130d560fb77ecbe41a3b/_data/mytext.txt
+testing
+
+$ sudo /bin/bash -c \
+  "echo 'this is from the host OS' >/var/lib/docker/volumes/2a53fd295595690200a63def8a333b54682174923339130d560fb77ecbe41a3b/_data/host.txt"
+
+[root@bffdcb88c485 /]# cat /mydata/host.txt 
+this is from the host OS
+```
+
+* Cleanup
+```
+$ docker rm voltest
+$ docker volume ls
+$ docker volume rm 2a53fd295595690200a63def8a333b54682174923339130d560fb77ecbe41a3b
+```
+
+* Mount host's current working directory inside container:
+```
+$ echo "my config" >my.conf
+$ echo "my message" >message.txt
+$ echo "aerwr3adf" >app.bin
+$ chmod +x app.bin
+$ docker run -it --name voltest -v ${PWD}:/mydata centos:latest /bin/bash
+
+[root@f5f34ccb54fb /]# ls -l /mydata/
+total 24
+-rwxrwxr-x 1 1000 1000 10 Mar  8 19:29 app.bin
+-rw-rw-r-- 1 1000 1000 11 Mar  8 19:29 message.txt
+-rw-rw-r-- 1 1000 1000 10 Mar  8 19:29 my.conf
+[root@f5f34ccb54fb /]# touch /mydata/foobar
+
+$ ls -l ${PWD}
+total 24
+-rwxrwxr-x 1 bob   bob   10 Mar  8 11:29 app.bin
+-rw-r--r-- 1 root  root   0 Mar  8 11:36 foobar
+-rw-rw-r-- 1 bob   bob   11 Mar  8 11:29 message.txt
+-rw-rw-r-- 1 bob   bob   10 Mar  8 11:29 my.conf
+
+$ docker rm voltest
+```
+
+## Images
+
+### Saving and loading images
+
+```
+$ docker pull centos:latest
+$ docker run -it centos:latest /bin/bash
+
+[root@29fad368048c /]# yum update -y
+[root@29fad368048c /]# echo xtof >/root/built_by.txt
+[root@29fad368048c /]# exit
+
+$ docker commit reverent_elion centos:xtof
+$ docker rm reverent_elion
+$ docker images
+REPOSITORY   TAG      IMAGE ID       CREATED         SIZE
+centos       xtof     e0c8bd35ba50   3 seconds ago   463MB
+centos       latest   980e0e4c79ec   1 minute ago    197MB
+
+$ docker history centos:xtof
+IMAGE          CREATED             CREATED BY                                      SIZE
+e0c8bd35ba50   27 seconds ago      /bin/bash                                       266MB               
+980e0e4c79ec   18 months ago       /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                  
+<missing>      18 months ago       /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0B                  
+<missing>      18 months ago       /bin/sh -c #(nop) ADD file:e336b45186086f7...   197MB               
+<missing>      18 months ago       /bin/sh -c #(nop)  MAINTAINER <nowiki>https://gith...</nowiki>   0B
+```
+
+* Save the original `centos:latest` image we pulled from Docker Hub:
+```
+$ docker save --output centos-latest.tar centos:latest
+```
+
+Note that the above command essentially tars up the contents of the image found in `/var/lib/docker/image` directory.
+
+```
+$ tar tvf centos-latest.tar 
+-rw-r--r-- 0/0        2309 2016-09-06 14:10 980e0e4c79ec933406e467a296ce3b86685e6b42eed2f873745e6a91d718e37a.json
+drwxr-xr-x 0/0           0 2016-09-06 14:10 ad96ed303040e4a7d1ee0596bb83db3175388259097dee50ac4aaae34e90c253/
+-rw-r--r-- 0/0           3 2016-09-06 14:10 ad96ed303040e4a7d1ee0596bb83db3175388259097dee50ac4aaae34e90c253/VERSION
+-rw-r--r-- 0/0        1391 2016-09-06 14:10 ad96ed303040e4a7d1ee0596bb83db3175388259097dee50ac4aaae34e90c253/json
+-rw-r--r-- 0/0   204305920 2016-09-06 14:10 ad96ed303040e4a7d1ee0596bb83db3175388259097dee50ac4aaae34e90c253/layer.tar
+-rw-r--r-- 0/0         202 1969-12-31 16:00 manifest.json
+-rw-r--r-- 0/0          89 1969-12-31 16:00 repositories
+```
+
+* Save space by compressing the tar file:
+```
+$ gzip centos-latest.tar  # .tar -> 195M; .tar.gz -> 68M
+```
+
+* Delete the original `centos:latest` image:
+```
+$ docker rmi centos:latest
+```
+
+* Restore (or load) the image back to our local repository:
+```
+$ docker load --input centos-latest.tar.gz
+```
+
+### Tagging images
+
+* List our current images:
+```
+$ docker images
+REPOSITORY    TAG    IMAGE ID            CREATED             SIZE
+centos        xtof   e0c8bd35ba50        About an hour ago   463MB
+```
+
+* Tag the above image:
+```
+$ docker tag e0c8bd35ba50 xtof/centos:v1
+$ docker images
+REPOSITORY    TAG    IMAGE ID            CREATED             SIZE
+centos        xtof   e0c8bd35ba50        About an hour ago   463MB
+xtof/centos   v1     e0c8bd35ba50        About an hour ago   463MB
+```
+
+Note that we did not create a new image, we just created a new tag of the same/original `centos:xtof` image.
+
+Note: The maximum number of characters in a tag is 128.
+
+
+## Docker networking
+
+### Default networks
+
+```
+$ ip addr show docker0
+4: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+    link/ether 02:42:c0:75:70:13 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::42:c0ff:fe75:7013/64 scope link 
+       valid_lft forever preferred_lft forever
+#~OR~
+$ ifconfig docker0
+docker0   Link encap:Ethernet  HWaddr 02:42:c0:75:70:13  
+          inet addr:172.17.0.1 Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::42:c0ff:fe75:7013/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:420654 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1162975 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0 
+          RX bytes:85851647 (85.8 MB)  TX bytes:1196235716 (1.1 GB)
+
+$ docker network inspect bridge | jq '.[] | .IPAM.Config[].Subnet'
+"172.17.0.0/16"
+```
+So, the usable range of IP addresses in our 172.17.0.0/16 subnet is: 172.17.0.1 - 172.17.255.254
+
+```
+$ docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+bf831059febc        bridge              bridge              local
+266f6df5c44e        host                host                local
+ce79e4043a20        none                null                local
+$ docker ps -q | wc -l
+#~OR~
+$ docker container ls --format '{{.Names}}' | wc -l
+4  # => 4 running containers
+$ docker network inspect bridge | jq '.[] | .Containers[].IPv4Address'
+"172.17.0.2/16"
+"172.17.0.5/16"
+"172.17.0.4/16"
+"172.17.0.3/16"
+```
+The output from the last command are the IP addresses of the 4 containers currently running on my host.
+
+### Custom networks
+
+* Create a Docker network
+```
+$ man docker-network-create  # for details
+$ docker network create --subnet 10.1.0.0/16 --gateway 10.1.0.1 --ip-range=10.1.4.0/24 \
+    --driver=bridge --label=host4network br04
+```
+
+* Use the above network with a given container:
+```
+$ docker run -it --name net-test --net br04 centos:latest /bin/bash
+```
+
+* Assign a static IP to a given container in the above (user created) network:
+```
+$ docker run -it --name net-test --net br04 --ip 10.1.4.100 centos:latest /bin/bash
+```
+
+Note: You can ''only'' assign static IPs to user created networks (i.e., you ''cannot'' assign them to the default "bridge" network).
+
+
+## Monitoring
+
+```
+$ docker top <container_name>
+$ docker stats <container_name>
+```
+
+## Events
+
+```
+$ docker events
+$ docker events --since '1h'
+$ docker events --since '2018-03-08T16:00'
+$ docker events --filter event=attach
+$ docker events --filter event=destroy
+$ docker events --filter event=attach --filter event=die --filter event=stop
+```
