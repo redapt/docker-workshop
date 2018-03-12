@@ -10,7 +10,7 @@ This document will show you how to install Docker on Linux (either Debian-based 
 ```
 $ sudo apt-get update -y
 $ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-$ echo "deb <nowiki>https://apt.dockerproject.org/repo ubuntu-xenial main</nowiki>" | sudo tee /etc/apt/sources.list.d/docker.list
+$ echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
 $ sudo apt-get update -y
 ```
 
@@ -45,7 +45,7 @@ $ sudo apt-get install -y docker-engine
 * Install Docker (the fast way):
 ```
 $ sudo yum update -y
-$ curl -fsSL <nowiki>https://get.docker.com/</nowiki> | sh
+$ curl -fsSL https://get.docker.com/ | sh
 ```
 
 * Install Docker (via a yum repo):
@@ -55,18 +55,18 @@ $ sudo pip install docker-py
 $ cat << EOF > /etc/yum.repos.d/docker.repo
 [dockerrepo]
 name=Docker Repository
-baseurl=<nowiki>https://yum.dockerproject.org/repo/main/centos/7/</nowiki>
+baseurl=https://yum.dockerproject.org/repo/main/centos/7/
 enabled=1
 gpgcheck=1
-gpgkey=<nowiki>https://yum.dockerproject.org/gpg</nowiki>
+gpgkey=https://yum.dockerproject.org/gpg
 EOF
 
-$ sudo rpm -vv --import <nowiki>https://yum.dockerproject.org/gpg</nowiki>
+$ sudo rpm -vv --import https://yum.dockerproject.org/gpg
 $ sudo yum update -y
 $ sudo yum install docker-engine -y
 ```
 
-===Post-installation steps===
+### Post-installation steps
 
 *Note: The following steps should be run on either your Debian-based or Red Hat-based distros.*
 
