@@ -26,6 +26,25 @@ The `RUN` instruction will execute any commands in a new layer on top of the cur
 
 Layering `RUN` instructions and generating commits conforms to the core concepts of Docker where commits are cheap and containers can be created from any point in an image’s history, much like source control.
 
+Notes on the order of execution:
+```
+FROM centos:latest
+LABEL maintainer="bob@example.com"
+
+RUN useradd -ms /bin/bash bob
+USER bob
+
+RUN echo "export PATH=/path/to/my/app:$PATH" >> /etc/bashrc
+```
+
+```
+$ docker build -t centos7/config:v1 .
+ ...
+ /bin/sh: /etc/bashrc: Permission denied
+```
+
+The order of execution matters! Prior to the directive `USER bob`, the user was root. After that directive, the user is now bob, who does not have super-user privileges. Move the `RUN echo ...` directive to before the `USER bob` directive for a successful build.
+
 ### USER
 
 The `USER` instruction sets the user name (or UID) and optionally the user group (or GID) to use when running the image and for any `RUN`, `CMD`, and `ENTRYPOINT` instructions that follow it in the Dockerfile.
