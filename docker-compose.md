@@ -5,7 +5,7 @@ by Christoph Champ for Redapt, Inc. (March 2018)
 
 ## Docker compose
 
-Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application's services. Then, with a single command, you create and start all the services from your configuration. To learn more about all the features of Compose, see the [list of features](https://docs.docker.com/compose/overview/#features list of features).
+Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application's services. Then, with a single command, you create and start all the services from your configuration. To learn more about all the features of Compose, see the [list of features](https://docs.docker.com/compose/overview/#features).
 
 Using Compose is basically a three-step process:
 * Define your app's environment with a `Dockerfile`. so it can be reproduced anywhere.
@@ -14,7 +14,7 @@ Using Compose is basically a three-step process:
 
 ### Basic example
 
-*Note: This is based off of [this article](https://docs.docker.com/compose/gettingstarted/ this article).*
+*Note: This is based off of [this article](https://docs.docker.com/compose/gettingstarted/).*
 
 In this basic example, we will build a simple Python web application running on Docker Compose. The application uses the Flask framework and maintains a hit counter in Redis.
 
@@ -65,8 +65,7 @@ flask
 redis
 ```
 
-* Create a Dockerfile
-*: This Dockerfile will be used to build an image that contains all the dependencies the Python application requires, including Python itself.
+* Create a Dockerfile (this Dockerfile will be used to build an image that contains all the dependencies the Python application requires, including Python itself):
 ```
 FROM python:3.4-alpine
 ADD . /code
