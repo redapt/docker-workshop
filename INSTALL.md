@@ -23,14 +23,13 @@ The output of the above command show look something like the following:
 ```
 docker-engine:
   Installed: (none)
-  Candidate: 1.11.2-0~xenial
+  Candidate: 17.05.0~ce-0~ubuntu-xenial
   Version table:
-     1.11.2-0~xenial 500
+     17.05.0~ce-0~ubuntu-xenial 500
         500 https://apt.dockerproject.org/repo ubuntu-xenial/main amd64 Packages
-     1.11.1-0~xenial 500
+     17.04.0~ce-0~ubuntu-xenial 500
         500 https://apt.dockerproject.org/repo ubuntu-xenial/main amd64 Packages
-     1.11.0-0~xenial 500
-        500 https://apt.dockerproject.org/repo ubuntu-xenial/main amd64 Packages
+...
 ```
 
 * Install docker:
@@ -94,6 +93,27 @@ $ sudo systemctl enable docker
 $ sudo usermod -aG docker $(whoami)
 ```
 Log out and log back in to use docker without `sudo`.
+
+* Check version of Docker installed:
+```
+$ docker version
+Client:
+ Version:      17.05.0-ce
+ API version:  1.29
+ Go version:   go1.7.5
+ Git commit:   89658be
+ Built:        Thu May  4 22:10:54 2017
+ OS/Arch:      linux/amd64
+
+Server:
+ Version:      17.05.0-ce
+ API version:  1.29 (minimum version 1.12)
+ Go version:   go1.7.5
+ Git commit:   89658be
+ Built:        Thu May  4 22:10:54 2017
+ OS/Arch:      linux/amd64
+ Experimental: false
+```
 
 * Check that docker has been successfully installed and configured:
 ```
