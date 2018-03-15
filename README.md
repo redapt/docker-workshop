@@ -231,10 +231,10 @@ $ docker stop webserver && docker rm webserver
 FROM centos:latest
 LABEL maintainer="bob@example.com"
 
-RUN yum update -y
-RUN yum install -y httpd net-tools
-
-RUN echo "This is a custom index file built during the image creation" > /var/www/html/index.html
+RUN yum update -y && \
+    yum install -y httpd net-tools && \
+    yum autoremove -y && \
+    echo "This is a custom index file built during the image creation" > /var/www/html/index.html
 
 EXPOSE 80
 
@@ -242,7 +242,7 @@ ENTRYPOINT ["/usr/sbin/httpd", "-D", "FOREGROUND"]
 ```
 
 ```
-$ docker build -t centos7/apache:v1 .
+$ docker build -t centos7/apache:v2 .
 $ docker run -d --rm --name webserver -P centos7/apache:v1
 
 # Get the higher-order external port automatically assigned to the container:
